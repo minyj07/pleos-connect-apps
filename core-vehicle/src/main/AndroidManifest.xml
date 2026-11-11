@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <application>
+        <!-- AAOS car service library (CarUxRestrictions). Optional so apps still install on plain emulators. -->
+        <uses-library
+            android:name="android.car"
+            android:required="false" />
+    </application>
+
+</manifest>

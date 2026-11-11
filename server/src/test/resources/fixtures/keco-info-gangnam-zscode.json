@@ -1,0 +1,10 @@
+
+{
+  "OpenAPI_ServiceResponse": {
+    "cmmMsgHeader": {
+      "errMsg": "SERVICETIMEOUT_ERROR",
+      "returnAuthMsg": "\uC11C\uBE44\uC2A4 \uC5F0\uACB0\uC2E4\uD328 \uC5D0\uB7EC",
+      "returnReasonCode": "05"
+    }
+  }
+}

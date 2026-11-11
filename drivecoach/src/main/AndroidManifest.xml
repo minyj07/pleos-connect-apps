@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- Pleos Connect runs on Android Automotive OS -->
+    <uses-feature
+        android:name="android.hardware.type.automotive"
+        android:required="true" />
+
+    <!--
+        Pleos Vehicle SDK permission (normal, manifest-only). Declare only what is used.
+          CAR_DRIVE : SteeringWheel angle, Brake pedal status, DrivingMode cruise state, Odometer
+        The store review guide asks for prior agreement with the App Market before using CAR_DRIVE.
+    -->
+    <uses-permission android:name="pleos.car.permission.CAR_DRIVE" />
+
+    <!--
+        Standard AAOS Car API permissions (CarPropertyManager).
+          CAR_SPEED      : dangerous -> requested at runtime after consent (PERF_VEHICLE_SPEED)
+          CAR_POWERTRAIN : normal (GEAR_SELECTION, PARKING_BRAKE_ON, IGNITION_STATE, EV_STOPPING_MODE)
+          CAR_INFO       : normal (INFO_EXTERIOR_DIMENSIONS for the parking simulation)
+    -->
+    <uses-permission android:name="android.car.permission.CAR_SPEED" />
+    <uses-permission android:name="android.car.permission.CAR_POWERTRAIN" />
+    <uses-permission android:name="android.car.permission.CAR_INFO" />
+
+    <!-- Background trip recording (only after the user consented) -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+
+    <!-- "폰으로 보기" only: uploads an encrypted report copy when the user asks (HTTPS in release; res/xml/network_security_config.xml) -->
+    <uses-permission android:name="android.permission.INTERNET" />
+
+    <application
+        android:name=".DriveCoachApp"
+        android:allowBackup="false"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:networkSecurityConfig="@xml/network_security_config"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.DriveCoach">
+
+        <!-- AAOS car service library. Optional so the app still installs on plain emulators. -->
+        <uses-library
+            android:name="android.car"
+            android:required="false" />
+
+        <!-- Every function works by touch; CCP (rotary) navigation is not supported. -->
+        <meta-data
+            android:name="com.hmg.rotary.ROTARY_SUPPORTED"
+            android:value="false" />
+
+        <activity
+            android:name=".MainActivity"
+            android:exported="true"
+            android:launchMode="singleTask">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+            <!-- Distraction Optimized: while driving only a static "recording" view is shown (CarUxRestrictions in code). -->
+            <meta-data
+                android:name="distractionOptimized"
+                android:value="true" />
+        </activity>
+
+        <service
+            android:name=".record.DriveRecorderService"
+            android:exported="false"
+            android:foregroundServiceType="specialUse">
+            <property
+                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+                android:value="Records vehicle speed, gear, brake and steering signals while driving to build on-device driving-habit reports the user consented to." />
+        </service>
+
+        <receiver
+            android:name=".record.BootReceiver"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+            </intent-filter>
+        </receiver>
+    </application>
+
+</manifest>

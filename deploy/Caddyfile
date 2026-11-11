@@ -1,0 +1,21 @@
+# HTTPS front of the relay server (Pleos app security guide: TLS 1.2 minimum, 1.3 recommended).
+# No `log` directive on purpose: access logs would keep request URLs, and /v1/stations/nearby and
+# /v1/stations/match carry coordinates in the query string.
+{$ADVISOR_DOMAIN} {
+	tls {
+		protocols tls1.2 tls1.3
+	}
+	header {
+		Strict-Transport-Security "max-age=31536000"
+		X-Content-Type-Options "nosniff"
+		-Server
+	}
+	# Only the app's API; the FAKE-mode debug endpoint and anything else stay unreachable.
+	@api path /v1/*
+	handle @api {
+		reverse_proxy advisor:8080
+	}
+	handle {
+		respond 404
+	}
+}

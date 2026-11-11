@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- Pleos Connect runs on Android Automotive OS -->
+    <uses-feature
+        android:name="android.hardware.type.automotive"
+        android:required="true" />
+
+    <!--
+        Pleos Vehicle SDK permissions.
+        Declare ONLY the permissions for the domains actually used (app review rejects unused ones).
+          CAR_ENERGY : EvBattery (SOC, charging, EV efficiency)
+          CAR_DRIVE  : Odometer / DrivingMode / Brake
+        CAR_INFO (CarInfo VIN / Display units) is deliberately not declared: VIN is sensitive and not shown.
+        CONTROL_CAR_ENERGY would be needed for set* APIs (charge switch / port / limits).
+    -->
+    <uses-permission android:name="pleos.car.permission.CAR_ENERGY" />
+    <uses-permission android:name="pleos.car.permission.CAR_DRIVE" />
+
+    <!--
+        Standard AAOS Car API permissions (CarPropertyManager) for data the Pleos SDK deprecated
+        in favour of AAOS: RANGE_REMAINING / EV_BATTERY_LEVEL / charge port & state.
+          CAR_ENERGY       : dangerous -> requested at runtime in MainActivity
+          CAR_ENERGY_PORTS : normal
+          CAR_INFO         : normal (INFO_EV_BATTERY_CAPACITY)
+    -->
+    <uses-permission android:name="android.car.permission.CAR_ENERGY" />
+    <uses-permission android:name="android.car.permission.CAR_ENERGY_PORTS" />
+    <uses-permission android:name="android.car.permission.CAR_INFO" />
+
+    <!--
+        Pleos NaviHelper SDK permissions (normal, manifest-only) for the charging advisor.
+          NAVI_ROUTE        : get*Info (destination / waypoints / location / route state), requestTrip
+          NAVI_ROUTE_SEARCH : requestRoute / addWaypoint / removeWaypoint / requestRouteWithWaypoints
+          NAVI_CUSTOM_MAP   : requestNavigationScreen (nearby chargers, place search, route overview)
+    -->
+    <uses-permission android:name="pleos.car.permission.NAVI_ROUTE" />
+    <uses-permission android:name="pleos.car.permission.NAVI_ROUTE_SEARCH" />
+    <uses-permission android:name="pleos.car.permission.NAVI_CUSTOM_MAP" />
+
+    <!-- Charging advisor relay server (HTTPS in release; see res/xml/network_security_config.xml) -->
+    <uses-permission android:name="android.permission.INTERNET" />
+
+    <!--
+        Charging advisor background watch: a specialUse foreground service keeps watching the route while
+        the navi covers the app (started only while the app is on screen, stopped when there is nothing
+        to watch), and heads-up notifications with one station action.
+    -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+
+    <application
+        android:name=".EvApp"
+        android:allowBackup="false"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:networkSecurityConfig="@xml/network_security_config"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.PleosEv">
+
+        <!-- AAOS car service library (CarUxRestrictions). Optional so the app still installs on plain emulators. -->
+        <uses-library
+            android:name="android.car"
+            android:required="false" />
+
+        <!-- Every function works by touch; CCP (rotary) focus navigation is not supported (Pleos CCP policy). -->
+        <meta-data
+            android:name="com.hmg.rotary.ROTARY_SUPPORTED"
+            android:value="false" />
+
+        <activity
+            android:name=".MainActivity"
+            android:exported="true"
+            android:launchMode="singleTask">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+            <!-- Distraction Optimized: the dashboard stays usable while driving (CarUxRestrictions still applied in code). -->
+            <meta-data
+                android:name="distractionOptimized"
+                android:value="true" />
+        </activity>
+
+        <!-- "Find in the navi" from an alert: hands the search to the navi, raises it and closes (no UI). -->
+        <activity
+            android:name=".advisor.background.NaviActionActivity"
+            android:excludeFromRecents="true"
+            android:exported="false"
+            android:noHistory="true"
+            android:taskAffinity=""
+            android:theme="@android:style/Theme.Translucent.NoTitleBar">
+            <meta-data
+                android:name="distractionOptimized"
+                android:value="true" />
+        </activity>
+
+        <service
+            android:name=".advisor.background.AdvisorService"
+            android:exported="false"
+            android:foregroundServiceType="specialUse">
+            <property
+                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+                android:value="While the navigation app covers this app, watches the guided route, the battery level and the live status of the planned charging station, and alerts the driver when the charging plan needs to change." />
+        </service>
+
+        <receiver
+            android:name=".advisor.background.AdvisorActionReceiver"
+            android:exported="false" />
+    </application>
+
+</manifest>

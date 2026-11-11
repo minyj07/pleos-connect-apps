@@ -1,0 +1,38 @@
+# Gradle
+.gradle/
+build/
+**/build/
+.kotlin/
+
+# Android Studio / IntelliJ
+.idea/
+*.iml
+local.properties
+captures/
+.externalNativeBuild/
+.cxx/
+
+# Signing / secrets (never commit)
+*.jks
+*.keystore
+!debug.keystore
+secrets.properties
+*.env
+
+# Relay server runtime data (charger snapshot)
+server/data/
+# Drive coach share server runtime data (encrypted share blobs)
+share-server/data/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Contest submission working files: filled application forms contain personal data and signatures
+/submission/
+# Local assistant/editor settings
+.claude/
+# Mirror of the official Pleos documentation and SDK license (third-party content: link to the official site instead)
+docs/pleos-docs/
+# Designer hand-off bundles (large screenshot sets and zips of the pre-design UI)
+docs/design/

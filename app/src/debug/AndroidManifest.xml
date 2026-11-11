@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Debug-only additions: Phase 0 NaviHelper / notification / foreground-service spike and E2E hooks.
+     POST_NOTIFICATIONS / FOREGROUND_SERVICE(_SPECIAL_USE) come from the main manifest. -->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <application>
+        <!-- Exported so adb can drive it: am start -n com.example.pleosev/.debug.NaviProbeActivity -es probe init -->
+        <activity
+            android:name=".debug.NaviProbeActivity"
+            android:exported="true"
+            android:label="Navi Probe"
+            android:launchMode="singleTop">
+            <meta-data
+                android:name="distractionOptimized"
+                android:value="true" />
+        </activity>
+
+        <receiver
+            android:name=".debug.ProbeActionReceiver"
+            android:exported="false" />
+
+        <service
+            android:name=".debug.ProbeForegroundService"
+            android:exported="false"
+            android:foregroundServiceType="specialUse">
+            <property
+                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+                android:value="Watches the active navigation route and battery level to recommend charging stations while driving." />
+        </service>
+
+        <!-- E2E hooks for the background watch, driven by adb without showing the app (AdvisorDebugReceiver). -->
+        <receiver
+            android:name=".debug.AdvisorDebugReceiver"
+            android:exported="true" />
+
+        <!-- Alert buttons, reachable from adb in debug builds only (the emulator's notification UI cannot always show them).
+             Release builds keep both non-exported. -->
+        <receiver
+            android:name=".advisor.background.AdvisorActionReceiver"
+            android:exported="true"
+            tools:replace="android:exported" />
+
+        <activity
+            android:name=".advisor.background.NaviActionActivity"
+            android:exported="true"
+            tools:replace="android:exported" />
+    </application>
+</manifest>

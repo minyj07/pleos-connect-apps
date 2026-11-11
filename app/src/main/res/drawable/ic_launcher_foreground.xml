@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- simple battery + bolt glyph -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M30,38h40a4,4 0 0 1 4,4v24a4,4 0 0 1 -4,4H30a4,4 0 0 1 -4,-4V42a4,4 0 0 1 4,-4zM30,42v24h40V42zM76,48h4v12h-4z" />
+    <path
+        android:fillColor="#4CD964"
+        android:pathData="M52,44l-10,14h8l-2,10l10,-14h-8z" />
+</vector>

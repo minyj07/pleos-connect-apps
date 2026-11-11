@@ -1,0 +1,34 @@
+# Relay server behind Caddy (automatic HTTPS, TLS 1.2/1.3) on one VM. See docs/DEPLOY.md.
+#   cp advisor.env.example advisor.env   # then fill in the data.go.kr key (never commit advisor.env)
+#   ADVISOR_DOMAIN=advisor.example.com docker compose up -d --build
+services:
+  advisor:
+    build: ../server
+    image: ev-advisor-server
+    env_file: advisor.env
+    volumes:
+      - advisor-data:/app/data          # charger snapshot: a restart serves at once instead of waiting for the master sync
+    expose:
+      - "8080"                          # reachable from Caddy only, not published on the host
+    restart: unless-stopped
+    mem_limit: 640m
+
+  caddy:
+    image: caddy:2.10
+    depends_on:
+      - advisor
+    ports:
+      - "80:80"                         # ACME HTTP challenge and redirect to HTTPS
+      - "443:443"
+    environment:
+      ADVISOR_DOMAIN: ${ADVISOR_DOMAIN:?set ADVISOR_DOMAIN to the server's domain}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data                # certificates
+      - caddy-config:/config
+    restart: unless-stopped
+
+volumes:
+  advisor-data:
+  caddy-data:
+  caddy-config:
