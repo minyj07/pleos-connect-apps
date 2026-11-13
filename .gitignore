@@ -36,3 +36,6 @@ Thumbs.db
 docs/pleos-docs/
 # Designer hand-off bundles (large screenshot sets and zips of the pre-design UI)
 docs/design/
+# Design hand-off bundles the apps were restyled from (prototype HTML plus reference captures, some of other products' screens)
+/Drive Coach Composite Design-handoff/
+/EV Companion 웹페이지-handoff/

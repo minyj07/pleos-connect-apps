@@ -2,19 +2,28 @@ package com.example.drivecoach
 
 import android.Manifest
 import android.content.pm.PackageManager
+import android.graphics.Color
+import android.graphics.drawable.ColorDrawable
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
+import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.graphics.toArgb
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.drivecoach.record.RecorderController
 import com.example.drivecoach.ui.DriveCoachRoot
 import com.example.drivecoach.ui.MainViewModel
+import com.example.drivecoach.ui.theme.DarkPalette
 import com.example.drivecoach.ui.theme.DriveCoachTheme
+import com.example.drivecoach.ui.theme.LightPalette
 
 class MainActivity : ComponentActivity() {
 
@@ -28,10 +37,14 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
+        // Before the first frame, so a dark-mode user doesn't see the light window background flash by.
+        applyWindowTheme(app.settings.values.value.darkMode)
         setContent {
-            DriveCoachTheme {
-                val vm: MainViewModel = viewModel()
+            val vm: MainViewModel = viewModel()
+            val settings by vm.settings.collectAsStateWithLifecycle()
+            val dark = settings.darkMode
+            LaunchedEffect(dark) { applyWindowTheme(dark) }
+            DriveCoachTheme(dark) {
                 DriveCoachRoot(
                     vm = vm,
                     onConsentAccepted = {
@@ -43,6 +56,13 @@ class MainActivity : ComponentActivity() {
                 )
             }
         }
+    }
+
+    /** Window background and system-bar icon contrast follow the app's own theme switch, not the system's. */
+    private fun applyWindowTheme(dark: Boolean) {
+        val bars = if (dark) SystemBarStyle.dark(Color.TRANSPARENT) else SystemBarStyle.light(Color.TRANSPARENT, Color.TRANSPARENT)
+        enableEdgeToEdge(statusBarStyle = bars, navigationBarStyle = bars)
+        window.setBackgroundDrawable(ColorDrawable((if (dark) DarkPalette else LightPalette).bg.toArgb()))
     }
 
     override fun onStart() {

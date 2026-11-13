@@ -30,6 +30,12 @@
 - **P단 핸들 연습**: P단(또는 주차 브레이크) + 규제 해제 + 조향 신호가 있을 때 실제 핸들 각도로 전·후진 예상 경로(6 m)를 그리고 목표와 비교합니다. 신호가 없으면 슬라이더.
 - **폰으로 보기**: 주행 리포트나 습관 분석(7·30·90일)에서 누르면, 그 리포트를 차에서 암호화한 사본을 공유 서버(`:share-server`)에 7일 올리고
   QR을 보여 줍니다. 폰 카메라로 찍으면 폰 브라우저가 내려받아 브라우저 안에서 복호화해 보여 줍니다(아래 "폰으로 보기" 절).
+- **화면**(2026-11-14 디자인 적용): 디자인 시안의 치수·색을 그대로 옮긴 150 dp 탭 레일과 카드 화면입니다. 색은 `ui/theme/Theme.kt` 의
+  라이트·다크 팔레트 두 벌이고 설정 > 화면 > 다크 모드로 바꿉니다(기본 라이트, `Settings.darkMode`). 부품은 `ui/components/Components.kt`,
+  아이콘은 `ui/components/Icons.kt`, 글꼴은 Noto Sans KR 가변 글꼴(`res/font/notosanskr_vf.ttf`, SIL OFL 1.1, 라이선스 `assets/licenses/NotoSansKR-OFL.txt`)입니다.
+  내용 폭 1100 dp 이상(가로 전체 창)에서는 시안처럼 카드를 나란히 놓고, 세로 분할 창(841 dp)에서는 한 열로 쌓습니다(`ui/components/Adaptive.kt`).
+  버튼은 시안의 크기로 그리되 누르는 영역은 64 dp 이상입니다. 주차 그림은 실제 치수(m)로 계산한 경로를 시안의 선·색으로 그립니다(`ui/parking/ParkingCanvas.kt`).
+  위 스크린샷은 debug 빌드의 데모 주행(설정 > 개발용)으로 만든 기록입니다.
 
 ## 폰으로 보기 (서버 링크, 종단간 암호화)
 | 단계 | 어디서 | 무엇을 |
@@ -112,7 +118,7 @@ pwsh -File scripts/pleos-vc.ps1 -Gear P -SpeedKph 0 -BrakePct 0 -SteeringDeg 0  
 PowerShell 에서 실행하세요(경로의 쉼표 때문에 cmd/Git Bash 는 안 됨).
 ```powershell
 $env:JAVA_HOME = "D:\Android Studio\jbr"
-.\gradlew.bat :drivecoach:testDebugUnitTest      # 65 tests: 분석·세그먼트·저장(암호화)·주차 플래너·데모 주행 재생·폰으로 보기(봉인·DTO·클라이언트·관리자)
+.\gradlew.bat :drivecoach:testDebugUnitTest      # 76 tests: 분석·세그먼트·저장(암호화)·주차 플래너·데모 주행 재생·폰으로 보기(봉인·DTO·클라이언트·관리자)·화면 계산(디자인 헬퍼, 주차 그림 범위)
 .\gradlew.bat :share-server:test                 # 16 tests: 생성·조회·삭제·만료·415/413/507/429·보안 헤더·로그와 파일에 id 없음
 .\gradlew.bat :drivecoach:assembleDebug          # 릴리스(R8): :drivecoach:assembleRelease, R8 을 에뮬레이터에서: :drivecoach:assembleStaging
 & "$env:LOCALAPPDATA\Android\Sdk\platform-tools\adb.exe" install -r drivecoach\build\outputs\apk\debug\drivecoach-debug.apk

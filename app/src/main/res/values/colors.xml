@@ -1,4 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <color name="ic_launcher_background">#0B2545</color>
+    <!-- The design's page colour (EvColors.BackgroundOuter): what the window shows before the first frame. -->
+    <color name="ev_background">#0B1118</color>
 </resources>

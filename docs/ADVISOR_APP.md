@@ -102,26 +102,32 @@ app/src/main/java/com/example/pleosev/
 주행 중(CarUxRestrictions)에는 스크롤 없이 카드당 이름·대기 대수·출력·우회/도착 SOC·확인 시각과 큰 버튼 하나만 보이고,
 운영사·주의 문구·보조 버튼·설정은 숨깁니다. 경로 변경은 항상 운전자가 눌러야만 합니다.
 
-### 버튼 크기와 위치 (2026-11-03)
+### 화면 디자인과 버튼 크기 (2026-11-14, 디자인 적용 뒤)
 
-기준은 Pleos Connect UI Design Guide 의 기본 버튼 높이 Large / Medium / Small = 100 / 80 / 64 px(아이콘 36 px)입니다. 가이드 본문에는
-숫자가 없고 그림(`basic_size.svg`)에만 있습니다. Pleos 화면이 160 dpi 라 px 를 dp 로 그대로 씁니다(`ui/theme/ButtonSize.kt`).
-누르는 것은 모두 64 dp 이상이고, 주행 중에도 보이는 버튼은 80 dp 이상입니다.
+화면은 디자인 시안의 1600×900 좌표계에서 그립니다(`ui/design/DesignSpace.kt`). 폭 1100 dp 이상인 창(가로 전체 창 1682×1210)에서는
+그 좌표계를 `min(폭/1600, 높이/900)` 배(약 1.05배)로 키워 가운데에 두고 배경만 창 전체에 깝니다. 더 좁은 창(세로 분할 841×1210)에서는
+폭 800 좌표계에 같은 부품을 한 열로 쌓습니다. 아래 숫자는 시안의 px 입니다.
+
+Pleos Connect UI Design Guide 의 기본 버튼 높이는 Large / Medium / Small = 100 / 80 / 64 px(아이콘 36 px)입니다(가이드 본문에는
+숫자가 없고 그림 `basic_size.svg` 에만 있음, `ui/theme/ButtonSize.kt`). 시안에는 이보다 작게 그린 버튼이 있어, 보이는 크기는 시안대로 두고
+누르는 영역만 실제 64 dp 이상으로 넓혔습니다(`MinTouchViewConfiguration`). 주행 중 추천 카드의 "안내"는 실제 100 dp(Large)로 커집니다.
 
 | 위치 | 버튼 |
 | --- | --- |
-| 추천 카드 | 주 버튼은 카드 맨 아래(정차 80 dp, 주행 중 100 dp). 보조 버튼(정차 중, 64 dp, 테두리)은 그 위. 카드가 나란히 있으면 높이를 맞춰 주 버튼이 한 줄에 옴 |
-| 도우미 머리글 | 뒤로·새로고침 80 dp(배경 있는 원형). "내비 연결됨" 같은 상태는 버튼처럼 보이지 않는 테두리 글자(누를 수 없음) |
-| 설정(정차 중) | 칩 대신 구간 선택(segmented) 64 dp, 칸 너비 160 dp. 선택된 칸은 어두운 초록 채움·옅은 초록 글자·초록 테두리(꽉 찬 초록은 실행 버튼에만 씀). "알림 허용"·"위치 전송 동의 철회"는 64 dp 테두리 버튼 |
-| 대시보드 | "충전 도우미"를 머리글 오른쪽 끝(기본 40 dp)에서 게이지 바로 아래 큰 버튼(80 dp)으로 옮김. 충전 필요 배너 80 dp, "재연결" 80 dp |
-| 업데이트 팝업 | "예"(채움)·"아니요"(테두리) 160 × 64 dp. 바탕은 앱의 푸른빛 짙은 회색 |
+| 대시보드 | "충전 도우미" 그라데이션 버튼(높이 84), 배터리가 적을 때의 알림 띠(폭 720) |
+| 도우미 머리글 | 뒤로·새로고침 72 원형. "내비 연결됨" 같은 상태는 테두리 알약(누를 수 없음) |
+| 충전 설정(정차 중) | 구간 선택(segmented) 높이 54, 스위치 68×40, "위치 전송 동의 철회" 테두리 알약 |
+| 추천 카드(시안 높이 176) | "안내" 146×58, 그 위에 보조 동작 알약("내비에서 찾아 추가")과 즐겨찾기 별. 주행 중에는 "안내"만 남고 100 dp |
+| 업데이트 팝업 | "아니요"(테두리)·"예"(그라데이션) 160 × 64 dp. 시안 좌표계 밖이라 실제 크기 |
 
-색: M3 부품은 테마(`ui/theme/Theme.kt`)에 없는 색 역할에 M3 기본값(보랏빛 회색)을 씁니다. 선택 칸은 기본값
-`secondaryContainer` 대신 `primaryContainer`(#245035)를 직접 지정하고, 팝업 바탕(`surfaceContainerHigh`)이 속한
-`surfaceContainer` 계열은 테마에 앱의 푸른빛 회색으로 넣었습니다(팝업 #1F2730). 새 M3 부품을 쓸 때는 어떤 색 역할을 쓰는지 확인합니다.
+색은 시안의 값을 `ui/theme/EvColors.kt` 에 모았고, 화면은 M3 부품 대신 `ui/design/` 의 부품(`EvComponents.kt`, `EvIcons.kt`, `Backdrop.kt`)으로 그립니다.
+아직 M3 를 쓰는 곳(팝업·메뉴·진행 표시)은 `ui/theme/Theme.kt` 가 모든 색 역할을 같은 팔레트로 채워 M3 기본 보랏빛이 나오지 않습니다.
+글꼴은 Pretendard Variable(`res/font/pretendard_variable.ttf`, SIL OFL 1.1, 라이선스 `assets/licenses/Pretendard-OFL.txt`)입니다.
+즐겨찾기 별은 `data/settings/AdvisorSettings.kt` 의 별도 DataStore(`advisor_ui`)에 저장하고, 정렬("추천 순"·"가까운 순")은 화면에서만 바꿉니다.
 
-에뮬레이터 화면: `docs/screenshots/ui-dashboard.png`, `ui-advisor-parked.png`(SOC 8 % 긴급, 정차), `ui-advisor-driving.png`(기어 D),
-`ui-update-dialog.png`(서버 `APP_LATEST_VERSION_CODE=2`로 띄운 업데이트 팝업).
+에뮬레이터 화면(2026-11-14 제출 APK): `docs/screenshots/ui-dashboard.png`, `ui-advisor-parked.png`(SOC 8 % 긴급, 정차), `ui-advisor-driving.png`(기어 D),
+`ui-update-dialog.png`(서버 `APP_LATEST_VERSION_CODE=2`로 띄운 업데이트 팝업). 같은 폴더의 `e2e-*`·`vc-*`·`spike-*` 는 적힌 날짜의 검증 기록이라
+디자인 적용 전 화면입니다.
 
 정밀화 보정 두 가지(E2E 에서 발견):
 - 내비는 SOC 를 배터리 잔량(kWh) ÷ 용량으로 계산하므로 차량 SOC 와 어긋날 수 있습니다. 도착 SOC 가 현재 SOC 보다 높게 오면

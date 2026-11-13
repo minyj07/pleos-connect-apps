@@ -12,6 +12,16 @@
 - DriveCoach 상세: [docs/DRIVECOACH.md](docs/DRIVECOACH.md)
 - Pleos Connect SDK 정리: [docs/PLEOS_SDK_GUIDE.md](docs/PLEOS_SDK_GUIDE.md), 등록·심사·정책 요약: [docs/PLEOS_APP_POLICY_SUMMARY.md](docs/PLEOS_APP_POLICY_SUMMARY.md)
 
+| EV Companion: 대시보드 | EV Companion: 충전 도우미 (배터리 8 %, 정차) |
+| --- | --- |
+| ![EV Companion 대시보드](docs/screenshots/ui-dashboard.png) | ![EV Companion 충전 도우미](docs/screenshots/ui-advisor-parked.png) |
+
+| DriveCoach: 홈 | DriveCoach: 주차 연습 |
+| --- | --- |
+| ![DriveCoach 홈](docs/screenshots/drivecoach-home.png) | ![DriveCoach 주차 연습](docs/screenshots/drivecoach-parking-sim.png) |
+
+Pleos Connect Emulator v2.1.0 의 화면(2560×1440) 그대로입니다. 왼쪽 차량 패널과 위·아래 막대는 Pleos 시스템 화면이고, 앱은 오른쪽 영역에 뜹니다.
+
 ## 테스트 환경
 
 | 항목 | 값 |
@@ -74,6 +84,20 @@ pwsh -File scripts/submission/make-apks.ps1 -Team "팀명"     # 빌드 + 서명
 ```
 서명 키와 비밀번호는 저장소에 없습니다(`local.properties` 의 `release.*`, [docs/DEPLOY.md](docs/DEPLOY.md)).
 
+## 화면 디자인
+
+두 앱 모두 디자인 시안(HTML 프로토타입)의 치수·색·글꼴을 Jetpack Compose 로 옮겼습니다(2026-11-14). Pleos 화면이 160 dpi 라 시안의 px 를 dp 로 그대로 씁니다.
+
+| | EV Companion | DriveCoach |
+| --- | --- | --- |
+| 테마 | 어두운 초록 한 가지 | 라이트(기본)·다크. 설정 > 화면 > 다크 모드 |
+| 글꼴 | Pretendard Variable | Noto Sans KR (가변) |
+| 가로 전체 창 1682×1210 | 시안의 1600×900 좌표계를 창에 맞춰 같은 비율로 키워 가운데에 둠 | 150 dp 탭 레일과 카드를 시안 치수대로 |
+| 세로 분할 창 841×1210 | 같은 부품을 한 열로 쌓음 | 카드를 한 열로 쌓음 |
+
+버튼은 시안의 크기로 그리고, 누르는 영역은 보이지 않게 64 dp 이상으로 넓혔습니다(Pleos Connect UI Design Guide 의 Small).
+글꼴은 둘 다 SIL Open Font License 1.1 이며, 라이선스 전문은 각 앱의 `src/main/assets/licenses/` 에 있습니다.
+
 ## 소스에서 빌드
 
 PowerShell 에서 실행합니다(프로젝트 경로에 쉼표가 있으면 cmd·Git Bash 에서는 `gradlew.bat` 이 동작하지 않습니다).
@@ -83,7 +107,7 @@ $env:JAVA_HOME = "<Android Studio>\jbr"
 .\gradlew.bat :app:assembleDebug :drivecoach:assembleDebug        # 디버그 APK
 .\gradlew.bat :app:testDebugUnitTest :drivecoach:testDebugUnitTest :shared:test :server:test :share-server:test
 ```
-단위 테스트는 223개입니다(앱 61, 서버 52, 공용 27, DriveCoach 67, 공유 서버 16).
+단위 테스트는 235개입니다(앱 64, 서버 52, 공용 27, DriveCoach 76, 공유 서버 16).
 
 ## Pleos Connect Emulator 준비
 
@@ -124,6 +148,7 @@ pwsh -File scripts/pleos-vc.ps1 -Catalog                      # 카드 ↔ endpo
 | AAOS CarPropertyManager | `CAR_ENERGY` 허용 후 RANGE_REMAINING 500 km, EV_BATTERY_LEVEL 77.4 kWh, INFO_EV_BATTERY_CAPACITY 77.4 kWh, 충전 포트 닫힘/커넥터 분리 수신. 허용 전에는 `SecurityException` 과 `registerCallback: propertyId is not in carPropertyConfig list`. (EV_CHARGE_STATE 는 SOC와 무관하게 늘 충전 완료라, 커넥터가 분리돼 있으면 "대기"로 표시) |
 | 실시간 갱신 | Virtual Console 로 SOC 42 %·Range 350 km 설정 → 즉시 `onChangeEvent(EV_BATTERY_SOC=42)` 수신, 게이지·주행 가능 거리·클러스터 갱신. |
 | 제출 APK (2026-11-11) | 두 APK 모두 설치·실행 확인. EV Companion: 차량 연결, 로컬 서버(합성 데이터)로 경로의 충전소 점검과 대안 카드 3장, 내비 검색 연동. DriveCoach: 동의·권한 뒤 차량 신호 5종 연결, 기록 서비스 실행. |
+| 제출 APK (2026-11-14, 디자인 적용 뒤 다시 빌드) | 두 APK 모두 설치·실행 확인. EV Companion: 차량 연결, 로컬 서버(합성 데이터)로 주변 충전소 카드 3장(배터리 18 %·8 %), 기어 D 의 주행 중 화면, 업데이트 팝업. DriveCoach: 동의·권한 뒤 차량 신호 5종 연결, 주차 연습 다섯 방식의 경로 계산(가장 오래 걸린 전진 직각이 약 5초), 설정 화면. |
 | 참고 | `PERF_ODOMETER` 변경 이벤트가 값이 같아도 3~4초마다 반복 수신됩니다(불필요한 리컴포지션 주의). |
 
 ## 구조
@@ -185,7 +210,7 @@ VIN(`getVINInfo`)은 민감한 차량 정보라 읽지 않으며, 그래서 `ple
 DriveCoach 의 신호와 권한은 [docs/DRIVECOACH.md](docs/DRIVECOACH.md) "차량 신호와 권한" 표에 있습니다.
 
 ## 다음 단계
-- 중계 서버·공유 서버의 HTTPS 공개 배포, 화면 디자인 적용
+- 중계 서버·공유 서버의 HTTPS 공개 배포
 - `onChargerOperatorInfo`(운영사 목록)로 충전 도우미의 운영사 선호/회피 설정
 - FusedLocation 근접 알림으로 충전소 도착 감지, TextToSpeech 음성 안내
 - 앱 ID `com.example.pleosev`·`com.example.drivecoach` 를 실제 패키지명으로 변경 (마켓 제출용, [docs/DEPLOY.md](docs/DEPLOY.md) "운영자가 할 일")

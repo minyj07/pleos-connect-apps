@@ -1,4 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <color name="ic_launcher_background">#10233F</color>
+    <!-- Design token "bg" of the light theme (see ui/theme/Theme.kt). -->
+    <color name="coach_window_background">#F6F6F6</color>
 </resources>

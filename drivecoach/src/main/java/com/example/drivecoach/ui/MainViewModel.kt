@@ -187,6 +187,9 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     fun setAutoStart(on: Boolean) = app.settings.update { copy(autoStartOnBoot = on) }
 
+    /** 설정 > 화면 > 다크 모드: the whole app follows it at once (see DriveCoachTheme). */
+    fun setDarkMode(on: Boolean) = app.settings.update { copy(darkMode = on) }
+
     fun setRetention(days: Int) {
         app.settings.update { copy(retentionDays = days) }
         app.io.execute { runCatching { app.tripStore.prune(System.currentTimeMillis(), days) } }

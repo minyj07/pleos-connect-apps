@@ -30,6 +30,8 @@ class Settings(context: Context) {
         /** Separate, optional consent for "폰으로 보기" (uploading encrypted copies); 0 = not given. */
         val shareConsentVersion: Int = 0,
         val shareConsentAtEpochMs: Long = 0L,
+        /** 설정 > 화면 > 다크 모드. The design's default is the light theme. */
+        val darkMode: Boolean = false,
     ) {
         val consented: Boolean get() = consentVersion >= CONSENT_VERSION
         val needsConsentDecision: Boolean get() = !consented && !consentDeclined
@@ -55,6 +57,7 @@ class Settings(context: Context) {
             .putFloat(K_STEER_LOCK, v.steeringFullLockRaw ?: -1f)
             .putInt(K_SHARE_CONSENT_VERSION, v.shareConsentVersion)
             .putLong(K_SHARE_CONSENT_AT, v.shareConsentAtEpochMs)
+            .putBoolean(K_DARK_MODE, v.darkMode)
             .apply()
         _values.value = v
     }
@@ -71,6 +74,7 @@ class Settings(context: Context) {
         steeringFullLockRaw = prefs.getFloat(K_STEER_LOCK, -1f).takeIf { it > 0f },
         shareConsentVersion = prefs.getInt(K_SHARE_CONSENT_VERSION, 0),
         shareConsentAtEpochMs = prefs.getLong(K_SHARE_CONSENT_AT, 0L),
+        darkMode = prefs.getBoolean(K_DARK_MODE, false),
     )
 
     /** Geometry for the parking simulation: profile choice, falling back to the default preset. */
@@ -100,6 +104,7 @@ class Settings(context: Context) {
         private const val K_STEER_LOCK = "steer_full_lock"
         private const val K_SHARE_CONSENT_VERSION = "share_consent_version"
         private const val K_SHARE_CONSENT_AT = "share_consent_at"
+        private const val K_DARK_MODE = "dark_mode"
         private val json = Json { ignoreUnknownKeys = true }
     }
 }

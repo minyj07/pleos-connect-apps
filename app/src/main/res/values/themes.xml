@@ -2,7 +2,7 @@
 <resources>
     <!-- Base theme; the real theming is done in Compose (ui/theme/Theme.kt). -->
     <style name="Theme.PleosEv" parent="android:Theme.Material.NoActionBar">
-        <item name="android:windowBackground">@android:color/black</item>
+        <item name="android:windowBackground">@color/ev_background</item>
         <item name="android:statusBarColor">@android:color/transparent</item>
     </style>
 </resources>

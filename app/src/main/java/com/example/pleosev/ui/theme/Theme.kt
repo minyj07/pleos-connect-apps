@@ -5,46 +5,78 @@ import androidx.compose.material3.Typography
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.sp
 
 /**
- * In-vehicle UI is always dark, high-contrast and large (driver-distraction guideline:
- * large touch targets, high contrast, minimal text).
+ * Material roles mapped onto the design's palette ([EvColors]), so the few Material parts the app still
+ * uses (dialogs, menus, progress indicators, ripples) match the screens, which are drawn from the design's
+ * own tokens. Every role M3 would otherwise fill with its purple-tinted baseline is set here.
  */
 private val EvDarkColors = darkColorScheme(
-    primary = Color(0xFF4CD964),          // charge green
-    onPrimary = Color(0xFF00210A),
-    primaryContainer = Color(0xFF245035), // selected choice (tonal green)
-    onPrimaryContainer = Color(0xFFB7F0C1),
-    secondary = Color(0xFF7DB7FF),        // info blue
-    onSecondary = Color(0xFF00213F),
-    tertiary = Color(0xFFFFC857),         // warning amber
-    error = Color(0xFFFF5C5C),
-    background = Color(0xFF0B0F14),
-    onBackground = Color(0xFFF2F4F7),
-    surface = Color(0xFF151B23),
-    onSurface = Color(0xFFF2F4F7),
-    surfaceVariant = Color(0xFF1F2730),
-    onSurfaceVariant = Color(0xFFB8C0CC),
-    // Container roles on the same blue-grey ramp; left unset, M3 parts such as dialogs use its purple-tinted greys.
-    surfaceContainerLowest = Color(0xFF0B0F14),
-    surfaceContainerLow = Color(0xFF10151B),
-    surfaceContainer = Color(0xFF181F28),
-    surfaceContainerHigh = Color(0xFF1F2730), // dialogs
-    surfaceContainerHighest = Color(0xFF29323D),
-    outline = Color(0xFF3A4654),
+    primary = EvColors.Green,
+    onPrimary = EvColors.OnGreen,
+    primaryContainer = EvColors.IllustrationStart,
+    onPrimaryContainer = EvColors.GradientStart,
+    inversePrimary = EvColors.GlowGreenDeep,
+    secondary = EvColors.GradientEnd,
+    onSecondary = EvColors.OnGreen,
+    secondaryContainer = EvColors.IllustrationEnd,
+    onSecondaryContainer = EvColors.GradientStart,
+    tertiary = EvColors.Amber,
+    onTertiary = EvColors.OnAmber,
+    tertiaryContainer = Color(0xFF282210),
+    onTertiaryContainer = EvColors.AmberSub,
+    error = EvColors.Red,
+    onError = EvColors.OnRed,
+    errorContainer = Color(0xFF2A1212),
+    onErrorContainer = EvColors.RedSub,
+    background = EvColors.BackgroundOuter,
+    onBackground = EvColors.Ink,
+    surface = EvColors.PanelSolid,
+    onSurface = EvColors.Ink,
+    surfaceVariant = EvColors.StationCard,
+    onSurfaceVariant = EvColors.TextSub,
+    surfaceTint = EvColors.Green,
+    inverseSurface = EvColors.TextLabel,
+    inverseOnSurface = EvColors.OnGreen,
+    surfaceDim = EvColors.Outside,
+    surfaceBright = EvColors.ArcTrack,
+    surfaceContainerLowest = EvColors.Outside,
+    surfaceContainerLow = EvColors.BackgroundOuter,
+    surfaceContainer = EvColors.PanelSolid,
+    surfaceContainerHigh = EvColors.StationCard,
+    surfaceContainerHighest = EvColors.RoundButton,
+    outline = Color(0xFF39424C),         // white 20 % over the page
+    outlineVariant = Color(0xFF232B34),  // white 10 % over the page
+    scrim = Color.Black,
+    // The "fixed" accents too, so no role keeps M3's baseline purple.
+    primaryFixed = EvColors.GradientStart,
+    primaryFixedDim = EvColors.Green,
+    onPrimaryFixed = EvColors.OnGreen,
+    onPrimaryFixedVariant = EvColors.IllustrationEnd,
+    secondaryFixed = EvColors.GradientStartCard,
+    secondaryFixedDim = EvColors.GradientEnd,
+    onSecondaryFixed = EvColors.OnGreen,
+    onSecondaryFixedVariant = EvColors.IllustrationEnd,
+    tertiaryFixed = EvColors.ArcLowEnd,
+    tertiaryFixedDim = EvColors.Amber,
+    onTertiaryFixed = EvColors.OnAmber,
+    onTertiaryFixedVariant = Color(0xFF282210),
 )
 
 private val EvTypography = Typography(
-    displayLarge = TextStyle(fontSize = 64.sp, fontWeight = FontWeight.Bold, lineHeight = 72.sp),
-    headlineMedium = TextStyle(fontSize = 32.sp, fontWeight = FontWeight.SemiBold, lineHeight = 40.sp),
-    titleLarge = TextStyle(fontSize = 24.sp, fontWeight = FontWeight.SemiBold, lineHeight = 32.sp),
-    titleMedium = TextStyle(fontSize = 20.sp, fontWeight = FontWeight.Medium, lineHeight = 28.sp),
-    bodyLarge = TextStyle(fontSize = 20.sp, lineHeight = 28.sp),
-    bodyMedium = TextStyle(fontSize = 18.sp, lineHeight = 26.sp),
-    labelLarge = TextStyle(fontSize = 18.sp, fontWeight = FontWeight.Medium, lineHeight = 24.sp),
+    displayLarge = evText(100, EvWeight.ExtraBold, lineHeight = 1f, letterSpacingEm = -0.02f),
+    headlineLarge = evText(46, EvWeight.Bold, letterSpacingEm = -0.01f),
+    headlineMedium = evText(36, EvWeight.Bold, letterSpacingEm = -0.01f),
+    headlineSmall = evText(31, EvWeight.Bold),
+    titleLarge = evText(27, EvWeight.Bold),
+    titleMedium = evText(23, EvWeight.Bold),
+    titleSmall = evText(21, EvWeight.SemiBold),
+    bodyLarge = evText(20),
+    bodyMedium = evText(19),
+    bodySmall = evText(18),
+    labelLarge = evText(19, EvWeight.SemiBold),
+    labelMedium = evText(17),
+    labelSmall = evText(17),
 )
 
 @Composable

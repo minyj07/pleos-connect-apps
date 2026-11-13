@@ -117,11 +117,12 @@ object ScenarioBuilder {
         val span = 4.5 * s
         val lines = (-4..5).map { k -> Segment(Vec2(-s / 2 + k * s, 0.0), Vec2(-s / 2 + k * s, -d)) } +
             Segment(Vec2(-span, -d), Vec2(span, -d))
-        val cars = if (spec.neighbors) {
-            listOf(-3, -2, -1, 1, 2, 3).map { k -> rectangle(Vec2(k * s, -d / 2), PI / 2, NEIGHBOR_LENGTH_M, NEIGHBOR_WIDTH_M) }
-        } else {
-            emptyList()
-        }
+        fun parked(k: Int) = rectangle(Vec2(k * s, -d / 2), PI / 2, NEIGHBOR_LENGTH_M, NEIGHBOR_WIDTH_M)
+        val cars = if (spec.neighbors) listOf(-3, -2, -1, 1, 2, 3).map(::parked) else emptyList()
+        // Every drawn stall but the target is taken, as in the design's drawing. The two end stalls are
+        // out of the manoeuvre's reach (the car stays in the aisle there), so their cars are only drawn
+        // and the planner keeps checking the same six neighbours.
+        val scenery = if (spec.neighbors) listOf(-4, 4).map(::parked) else emptyList()
         val goal = if (spec.type == ParkingType.REVERSE_PERPENDICULAR) {
             Pose(0.0, -d + END_MARGIN_M + g.rearOverhangM, PI / 2)
         } else {
@@ -132,7 +133,7 @@ object ScenarioBuilder {
             goal = goal,
             target = listOf(Vec2(-s / 2, 0.0), Vec2(s / 2, 0.0), Vec2(s / 2, -d), Vec2(-s / 2, -d)),
             lines = lines,
-            cars = cars.map { it.toList() },
+            cars = (cars + scenery).map { it.toList() },
             walls = listOf(Segment(Vec2(-span, a), Vec2(span, a))),
             obstacles = cars.map { BoxObstacle(it, CAR_CLEARANCE_M, "옆 차") } +
                 LineObstacle(Vec2(0.0, 1.0), -d, WALL_CLEARANCE_M, "칸 끝") +

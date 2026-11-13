@@ -1,8 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Base theme; the real theming is done in Compose (ui/theme/Theme.kt). -->
-    <style name="Theme.DriveCoach" parent="android:Theme.Material.NoActionBar">
-        <item name="android:windowBackground">@android:color/black</item>
+    <!--
+        Base theme; the real theming is done in Compose (ui/theme/Theme.kt). The window background is the
+        design's light page colour (the default theme); MainActivity swaps it when dark mode is on.
+    -->
+    <style name="Theme.DriveCoach" parent="android:Theme.Material.Light.NoActionBar">
+        <item name="android:windowBackground">@color/coach_window_background</item>
         <item name="android:statusBarColor">@android:color/transparent</item>
     </style>
 </resources>

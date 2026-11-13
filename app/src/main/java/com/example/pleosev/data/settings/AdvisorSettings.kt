@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.intPreferencesKey
+import androidx.datastore.preferences.core.stringSetPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
@@ -21,9 +22,26 @@ data class AdvisorPrefs(
 
 private val Context.advisorStore by preferencesDataStore(name = "advisor")
 
+/**
+ * What only the screen needs (favourite stations). Kept in a store of its own: the advisor watches
+ * [AdvisorSettings.prefs], and a star must not make it evaluate or fetch again.
+ */
+private val Context.advisorUiStore by preferencesDataStore(name = "advisor_ui")
+
 class AdvisorSettings(context: Context) {
 
     private val store = context.applicationContext.advisorStore
+    private val uiStore = context.applicationContext.advisorUiStore
+
+    /** Station ids (statId) the driver starred on the advisor screen. */
+    val favoriteStations: Flow<Set<String>> = uiStore.data.map { it[FAVORITE_STATIONS].orEmpty() }
+
+    suspend fun toggleFavoriteStation(statId: String) {
+        uiStore.edit { p ->
+            val current = p[FAVORITE_STATIONS].orEmpty()
+            p[FAVORITE_STATIONS] = if (statId in current) current - statId else current + statId
+        }
+    }
 
     val prefs: Flow<AdvisorPrefs> = store.data.map { p ->
         AdvisorPrefs(
@@ -57,5 +75,6 @@ class AdvisorSettings(context: Context) {
         val MIN_KW = intPreferencesKey("min_kw")
         val MAX_DETOUR = intPreferencesKey("max_detour_min")
         val BACKGROUND_WATCH = booleanPreferencesKey("background_watch")
+        val FAVORITE_STATIONS = stringSetPreferencesKey("favorite_stations")
     }
 }

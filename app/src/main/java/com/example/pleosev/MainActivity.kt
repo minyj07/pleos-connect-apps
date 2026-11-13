@@ -15,11 +15,8 @@ import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -46,8 +43,14 @@ import com.example.pleosev.ui.AdvisorBanner
 import com.example.pleosev.ui.DashboardScreen
 import com.example.pleosev.ui.DashboardViewModel
 import com.example.pleosev.ui.advisor.AdvisorScreen
+import com.example.pleosev.ui.design.EvText
+import com.example.pleosev.ui.design.GradientButton
+import com.example.pleosev.ui.design.PillButton
 import com.example.pleosev.ui.theme.ButtonSize
+import com.example.pleosev.ui.theme.EvColors
+import com.example.pleosev.ui.theme.EvWeight
 import com.example.pleosev.ui.theme.PleosEvTheme
+import com.example.pleosev.ui.theme.evText
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
@@ -93,6 +96,8 @@ class MainActivity : ComponentActivity() {
         setContent {
             PleosEvTheme {
                 var showAdvisor by rememberSaveable { mutableStateOf(openAdvisorRequests > 0) }
+                // The alert the driver closed (AdvisorBanner.key); kept here so a visit to the advisor does not bring it back.
+                var dismissedBanner by rememberSaveable { mutableStateOf<String?>(null) }
                 val requests = openAdvisorRequests
                 LaunchedEffect(requests) { if (requests > 0) showAdvisor = true }
                 if (showAdvisor) {
@@ -107,11 +112,15 @@ class MainActivity : ComponentActivity() {
                     val viewModel: DashboardViewModel = viewModel()
                     val state by viewModel.uiState.collectAsStateWithLifecycle()
                     val advisor by viewModel.advisor.collectAsStateWithLifecycle()
+                    val banner = banner(advisor)
+                    // Closed until the need changes: another message shows again, and so does the same one after it went away.
+                    LaunchedEffect(banner?.key) { if (banner == null) dismissedBanner = null }
                     DashboardScreen(
                         state = state,
                         onRetry = viewModel::retry,
-                        advisorBanner = banner(advisor),
+                        advisorBanner = banner?.takeIf { it.key != dismissedBanner },
                         onOpenAdvisor = { showAdvisor = true },
+                        onDismissBanner = { dismissedBanner = banner?.key },
                     )
                 }
                 UpdatePrompt()
@@ -127,19 +136,30 @@ class MainActivity : ComponentActivity() {
         val driving by remember { appGraph.vehicle.state.map { it.isDriving }.distinctUntilChanged() }
             .collectAsStateWithLifecycle(initialValue = true)
         if (newer == null || driving) return
+        // In the design's palette: the panel colour, a gradient pill to confirm and an outlined pill to decline.
+        // A dialog is a window of its own, outside the scaled design space: its sizes are real dp.
         AlertDialog(
             onDismissRequest = updates::answered,
-            text = { Text("최신 버전이 존재합니다. 업데이트를 위해 페이지를 이동할까요?") },
+            shape = RoundedCornerShape(24.dp),
+            containerColor = EvColors.PanelSolid,
+            tonalElevation = 0.dp,
+            text = {
+                EvText("최신 버전이 존재합니다. 업데이트를 위해 페이지를 이동할까요?", evText(21, color = EvColors.Ink, lineHeight = 1.5f))
+            },
             // Filled / outlined rather than text buttons, so the in-car sized touch areas are visible.
             confirmButton = {
-                Button(onClick = { updates.answered(); openMarketPage() }, modifier = DialogButtonSize) {
-                    Text("예", style = MaterialTheme.typography.titleMedium)
+                GradientButton(onClick = { updates.answered(); openMarketPage() }, modifier = DialogButtonSize) {
+                    EvText("예", evText(22, EvWeight.Bold, EvColors.OnGreen), singleLine = true)
                 }
             },
             dismissButton = {
-                OutlinedButton(onClick = updates::answered, modifier = DialogButtonSize) {
-                    Text("아니요", style = MaterialTheme.typography.titleMedium)
-                }
+                PillButton(
+                    "아니요",
+                    onClick = updates::answered,
+                    modifier = DialogButtonSize,
+                    height = ButtonSize.Small,
+                    textStyle = evText(22, EvWeight.SemiBold, EvColors.TextLabel),
+                )
             },
         )
     }
@@ -183,26 +203,25 @@ class MainActivity : ComponentActivity() {
 
     private fun Intent?.opensAdvisor() = this?.getBooleanExtra(EXTRA_OPEN_ADVISOR, false) == true
 
+    /** The dashboard alert: what the advisor found (the alert's headline) and what its button offers. */
     private fun banner(advisor: AdvisorState): AdvisorBanner? {
+        if (advisor.attention < Severity.RECOMMENDED) return null
         val urgent = advisor.attention == Severity.URGENT
         val stop = AlertTexts.stopLabel(advisor)
-        val text = when {
-            advisor.attention < Severity.RECOMMENDED -> return null
-            advisor.need.kind == NeedKind.PLANNED_STOP && advisor.plannedVerdict == PlannedStopVerdict.BUSY ->
-                "${stop}에 빈 충전기가 없어요 · 대안 보기"
-            advisor.need.kind == NeedKind.PLANNED_STOP && advisor.plannedVerdict == PlannedStopVerdict.UNREACHABLE ->
-                "${stop}까지 배터리가 부족해요 · 가까운 충전소 보기"
+        val plannedStop = advisor.need.kind == NeedKind.PLANNED_STOP
+        val (title, action) = when {
+            plannedStop && advisor.plannedVerdict == PlannedStopVerdict.BUSY -> "${stop}에 빈 충전기가 없어요" to "대안 보기"
+            plannedStop && advisor.plannedVerdict == PlannedStopVerdict.UNREACHABLE -> "${stop}까지 배터리가 부족해요" to "가까운 충전소 보기"
             // Urgent with a usable stop (attention follows the battery, not the stop): say so, not "can't check".
-            advisor.need.kind == NeedKind.PLANNED_STOP && advisor.plannedVerdict == PlannedStopVerdict.OK ->
-                "${stop}에 빈 충전기가 있어요 · 충전소 보기"
-            advisor.need.kind == NeedKind.PLANNED_STOP && advisor.plannedVerdict == null -> "${stop}를 확인하고 있어요"
-            advisor.need.kind == NeedKind.PLANNED_STOP && advisor.plannedVerdict == PlannedStopVerdict.NO_MATCHING_CHARGER ->
-                "${stop}에 설정한 출력의 충전기가 없어요 · 대안 보기"
-            advisor.need.kind == NeedKind.PLANNED_STOP -> "$stop 상태를 확인할 수 없어요 · 대안 보기"
-            advisor.need.kind == NeedKind.ON_ROUTE -> "목적지 도착 전에 충전이 필요해요 · 충전소 보기"
-            else -> "배터리가 부족해요 · 가까운 충전소 보기"
+            plannedStop && advisor.plannedVerdict == PlannedStopVerdict.OK -> "${stop}에 빈 충전기가 있어요" to "충전소 보기"
+            plannedStop && advisor.plannedVerdict == null -> "${stop}를 확인하고 있어요" to "보기"
+            plannedStop && advisor.plannedVerdict == PlannedStopVerdict.NO_MATCHING_CHARGER -> "${stop}에 설정한 출력의 충전기가 없어요" to "대안 보기"
+            plannedStop -> "$stop 상태를 확인할 수 없어요" to "대안 보기"
+            advisor.need.kind == NeedKind.ON_ROUTE -> "목적지 도착 전에 충전이 필요해요" to "충전소 보기"
+            // Plain low battery: the design's alert as it is.
+            else -> "배터리가 부족해요" to "충전소 찾기"
         }
-        return AdvisorBanner(if (urgent) "긴급 · $text" else text, urgent)
+        return AdvisorBanner(if (urgent) "긴급 · $title" else title, action, urgent)
     }
 
     companion object {

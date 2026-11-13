@@ -25,6 +25,14 @@ class AdvisorViewModel(application: Application) : AndroidViewModel(application)
     val navi: StateFlow<NaviState> = graph.navi.state
     val prefs: StateFlow<AdvisorPrefs> = graph.settings.prefs.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), AdvisorPrefs())
 
+    /** Stations the driver starred (statId); only the star on their cards depends on it. */
+    val favorites: StateFlow<Set<String>> =
+        graph.settings.favoriteStations.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptySet())
+
+    fun toggleFavorite(statId: String) {
+        viewModelScope.launch { graph.settings.toggleFavoriteStation(statId) }
+    }
+
     fun setConsent(given: Boolean) {
         viewModelScope.launch { graph.settings.setLocationConsent(given) }
     }
