@@ -5,8 +5,8 @@
 
 | 앱 | 한 줄 소개 | 모듈 | APK |
 | --- | --- | --- | --- |
-| **EV Companion** | 내비가 고른 충전소를 실시간으로 점검해, 만차·고장이면 주행 중에도 대안을 먼저 알려 주는 전기차 충전 도우미 | `:app` (+ `:shared`, `:server`) | `apk/팀명_EVCompanion_release.apk` |
-| **DriveCoach (드라이브 코치)** | 차량 신호로 운전 습관을 기록해 리포트로 코칭하고, 내 차 제원과 실제 핸들로 주차를 미리 연습하는 운전 코치 | `:drivecoach` (+ `:share-server`) | `apk/팀명_DriveCoach_release.apk` |
+| **EV Companion** | 내비가 고른 충전소를 실시간으로 점검해, 만차·고장이면 주행 중에도 대안을 먼저 알려 주는 전기차 충전 도우미 | `:app` (+ `:shared`, `:server`) | `apk/바나나차차_EVCompanion_release.apk` |
+| **DriveCoach (드라이브 코치)** | 차량 신호로 운전 습관을 기록해 리포트로 코칭하고, 내 차 제원과 실제 핸들로 주차를 미리 연습하는 운전 코치 | `:drivecoach` (+ `:share-server`) | `apk/바나나차차_DriveCoach_release.apk` |
 
 - EV Companion 상세: [docs/ADVISOR_APP.md](docs/ADVISOR_APP.md), [docs/ADVISOR_SERVER.md](docs/ADVISOR_SERVER.md), [docs/SPIKE_NAVI_EV.md](docs/SPIKE_NAVI_EV.md)
 - DriveCoach 상세: [docs/DRIVECOACH.md](docs/DRIVECOACH.md)
@@ -40,8 +40,8 @@ Pleos Connect Emulator v2.1.0 의 화면(2560×1440) 그대로입니다. 왼쪽 
 에뮬레이터를 Cold boot 로 띄운 뒤 APK 를 설치합니다.
 
 ```bash
-adb install -r apk/팀명_EVCompanion_release.apk
-adb install -r apk/팀명_DriveCoach_release.apk
+adb install -r apk/바나나차차_EVCompanion_release.apk
+adb install -r apk/바나나차차_DriveCoach_release.apk
 ```
 
 ### EV Companion
@@ -76,11 +76,11 @@ adb install -r apk/팀명_DriveCoach_release.apk
 
 | APK | 빌드 | 설명 |
 | --- | --- | --- |
-| `apk/팀명_EVCompanion_release.apk` | `:app:assembleStaging` 결과를 release 키로 서명 | release 와 같은 코드(R8, 비디버그, 디버그 도구 없음)에 중계 서버 주소만 로컬(`http://127.0.0.1:8080`) |
-| `apk/팀명_DriveCoach_release.apk` | `:drivecoach:assembleRelease` 결과를 release 키로 서명 | 공유 서버 주소가 없어 "폰으로 보기" 버튼만 숨겨짐. 나머지는 모두 차 안에서 동작 |
+| `apk/바나나차차_EVCompanion_release.apk` | `:app:assembleStaging` 결과를 release 키로 서명 | release 와 같은 코드(R8, 비디버그, 디버그 도구 없음)에 중계 서버 주소만 로컬(`http://127.0.0.1:8080`) |
+| `apk/바나나차차_DriveCoach_release.apk` | `:drivecoach:assembleRelease` 결과를 release 키로 서명 | 공유 서버 주소가 없어 "폰으로 보기" 버튼만 숨겨짐. 나머지는 모두 차 안에서 동작 |
 
 ```powershell
-pwsh -File scripts/submission/make-apks.ps1 -Team "팀명"     # 빌드 + 서명 + apk/ 에 복사
+pwsh -File scripts/submission/make-apks.ps1 -Team "바나나차차"     # 빌드 + 서명 + apk/ 에 복사
 ```
 서명 키와 비밀번호는 저장소에 없습니다(`local.properties` 의 `release.*`, [docs/DEPLOY.md](docs/DEPLOY.md)).
 

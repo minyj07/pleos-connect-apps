@@ -4,10 +4,10 @@
     python video_cards.py cards.json
 
 cards.json:
-  { "dir": "C:\\...\\cards", "size": [1920, 1200], "bar": 120,
+  { "dir": "C:\\...\\cards", "size": [1920, 1200], "bar": 120, "accent": [76, 217, 100],
     "titles":   [ { "name": "title", "title": "EV Companion", "subtitle": "…", "lines": ["…", "…"] } ],
     "captions": [ { "name": "cap01", "text": "…", "sub": "…" } ] }
-결과: <dir>/bg.png, <dir>/<name>.png
+결과: <dir>/bg.png, <dir>/<name>.png  ("accent" 는 선택: 왼쪽 강조 막대 색)
 """
 import json
 import os
@@ -73,7 +73,10 @@ def title(spec, out, w, h):
 
 
 def main():
+    global ACCENT
     spec = json.load(open(sys.argv[1], encoding="utf-8"))
+    if spec.get("accent"):
+        ACCENT = tuple(spec["accent"])
     out_dir = spec["dir"]
     os.makedirs(out_dir, exist_ok=True)
     w, h = spec.get("size", [1920, 1200])

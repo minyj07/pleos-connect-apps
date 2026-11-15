@@ -16,6 +16,10 @@
   GitHub 저장소 주소. 비우면 7번 칸에 "(접수 메일에 기재)"로 들어갑니다.
 .PARAMETER Commit
   심사 기준 커밋 해시.
+.PARAMETER EvVideo
+  EV Companion 시연 영상의 링크. 비우면 7번 칸에 "접수 메일에 첨부(EVCompanion_demo.mp4)"로 들어갑니다.
+.PARAMETER DcVideo
+  DriveCoach 시연 영상의 링크. 비우면 "접수 메일에 첨부(DriveCoach_demo.mp4)".
 
 .EXAMPLE
   pwsh -File scripts/submission/fill-forms.ps1 -Team "우리팀" -RepoUrl "https://github.com/owner/repo" -Commit "abc1234"
@@ -24,6 +28,8 @@ param(
     [string]$Team = "",
     [string]$RepoUrl = "",
     [string]$Commit = "",
+    [string]$EvVideo = "",
+    [string]$DcVideo = "",
     [string]$Template = ""
 )
 $ErrorActionPreference = "Stop"
@@ -39,15 +45,18 @@ if ($Commit) { $common += @("--set", "COMMIT=$Commit") }
 if ($Team) { $common += @("--team", $Team) }
 
 $jobs = @(
-    @{ Dir = "ev-companion"; Out = "contest-application-consent EV.docx"; App = "EVCompanion"; Name = "" },
-    @{ Dir = "drivecoach"; Out = "contest-application-consent Drive.docx"; App = "DriveCoach"; Name = "DriveCoach (드라이브 코치)" }
+    @{ Dir = "ev-companion"; Out = "contest-application-consent EV.docx"; App = "EVCompanion"; Name = "";
+       Video = $(if ($EvVideo) { $EvVideo } else { "접수 메일에 첨부(EVCompanion_demo.mp4)" }) },
+    @{ Dir = "drivecoach"; Out = "contest-application-consent Drive.docx"; App = "DriveCoach"; Name = "DriveCoach (드라이브 코치)";
+       Video = $(if ($DcVideo) { $DcVideo } else { "접수 메일에 첨부(DriveCoach_demo.mp4)" }) }
 )
 foreach ($j in $jobs) {
     $jobArgs = @("-X", "utf8", $filler, "--template", $Template,
         "--proposal", (Join-Path $root "submission\$($j.Dir)\proposal.md"),
         "--out", (Join-Path $root "submission\$($j.Dir)\$($j.Out)"),
         "--root", $root,
-        "--set", "APK_PATH=apk/${teamForFile}_$($j.App)_release.apk") + $common
+        "--set", "APK_PATH=apk/${teamForFile}_$($j.App)_release.apk",
+        "--set", "VIDEO=$($j.Video)") + $common
     if ($j.Name) { $jobArgs += @("--app-name", $j.Name) }
     & python @jobArgs
     if ($LASTEXITCODE -ne 0) { throw "양식 채우기 실패: $($j.Dir)" }
